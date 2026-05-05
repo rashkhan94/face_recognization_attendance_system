@@ -392,7 +392,7 @@ def api_sa_stats():
     cur = db_execute(conn, "SELECT COUNT(*) AS v FROM organizations"); sites=db_fetchone(cur)['v']
     cur = db_execute(conn, "SELECT COUNT(*) AS v FROM public_venues"); pv=db_fetchone(cur)['v']
     cur = db_execute(conn, "SELECT COUNT(*) AS v FROM students"); students=db_fetchone(cur)['v']
-    cur = db_execute(conn, "SELECT COUNT(*) AS v FROM attendance WHERE date=date('now')"); today_a=db_fetchone(cur)['v']
+    cur = db_execute(conn, "SELECT COUNT(*) AS v FROM attendance WHERE date=?", (today,)); today_a=db_fetchone(cur)['v']
     cur = db_execute(conn, "SELECT COUNT(*) AS v FROM venue_requests WHERE status='pending'"); pending=db_fetchone(cur)['v']
     cur = db_execute(conn, "SELECT COUNT(*) AS v FROM organizations WHERE admin_logged_today=?",(today,)); logged=db_fetchone(cur)['v']
     conn.close()
