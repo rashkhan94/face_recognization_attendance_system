@@ -60,7 +60,7 @@ def db_fetchall(cur):
 
 def db_fetchone(cur):
     """Fetch one row as dict."""
-    row = db_fetchone(cur)
+    row = cur.fetchone()
     if row is None:
         return None
     if USE_PG:
