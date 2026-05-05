@@ -243,24 +243,6 @@ organizations    -- Classes/Sites with admin credentials
 
 ---
 
-## 🌐 Deployment
-
-### Deploy to Render (Free)
-
-1. **Fork this repository** to your GitHub account
-2. Go to [render.com](https://render.com) → Sign up free
-3. Click **New → Blueprint**
-4. Connect your GitHub and select this repo
-5. Render auto-detects `render.yaml` and creates:
-   - ✅ Docker web service (free)
-   - ✅ PostgreSQL database (free, persistent)
-6. Click **Apply** → Wait ~10-15 min for build
-7. Your app is live at `https://your-app.onrender.com`
-
-> **Note:** Free tier spins down after 15 min inactivity. First request after idle takes ~30s. Data persists in PostgreSQL.
-
----
-
 ## ⚡ How Face Recognition Works
 
 ```
