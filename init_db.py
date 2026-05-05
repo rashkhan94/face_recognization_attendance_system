@@ -70,13 +70,28 @@ if DATABASE_URL:
         venue_id INTEGER REFERENCES public_venues(id) ON DELETE CASCADE,
         org_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
         org_name TEXT,
+        admin_name TEXT,
         booking_date TEXT,
         start_time TEXT,
         end_time TEXT,
         purpose TEXT DEFAULT '',
         status TEXT DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP
     )""")
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS super_admin (
+        id SERIAL PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL
+    )""")
+
+    # Insert default superadmin if not exists
+    cur.execute("SELECT id FROM super_admin WHERE username='superadmin'")
+    if not cur.fetchone():
+        cur.execute("INSERT INTO super_admin (username, password) VALUES ('superadmin', 'admin123')")
+        print("Default super admin created: superadmin / admin123")
 
     conn.commit()
     cur.close()
