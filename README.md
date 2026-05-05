@@ -17,7 +17,9 @@
 
 <br>
 
-[🚀 Live Demo](#deployment) · [📸 Screenshots](#-screenshots) · [⚙️ Installation](#-quick-start) · [🏗 Architecture](#-architecture)
+**[🚀 Live Demo: https://fras-attendance.onrender.com](https://fras-attendance.onrender.com)**
+
+[📸 Screenshots](#-screenshots) · [⚙️ Installation](#-quick-start) · [🏗 Architecture](#-architecture)
 
 </div>
 
