@@ -49,7 +49,7 @@ def db_execute(conn, sql, params=None):
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     else:
         cur = conn.cursor()
-    cur = db_execute(conn, sql, params or ())
+    cur.execute(sql, params or ())
     return cur
 
 def db_fetchall(cur):
