@@ -224,10 +224,12 @@
                 <div class="ph-title">All Private Sites</div>
                 <span class="mono" id="sites-count"></span>
             </div>
-            <table>
-                <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Venue/Room</th><th>Admin</th><th>Hours</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
-                <tbody id="sites-tbody"><tr class="empty-row"><td colspan="9">Loading...</td></tr></tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Venue/Room</th><th>Admin</th><th>Hours</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
+                    <tbody id="sites-tbody"><tr class="empty-row"><td colspan="9">Loading...</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -247,10 +249,12 @@
         </div>
         <div class="panel">
             <div class="panel-hdr"><div class="ph-title">All Public Venues</div><span class="mono" id="pv-count"></span></div>
-            <table>
-                <thead><tr><th>#</th><th>Venue Name</th><th>Type</th><th>Location</th><th>Capacity</th><th>Status</th><th>Current Booker</th><th>Actions</th></tr></thead>
-                <tbody id="pvenues-tbody"><tr class="empty-row"><td colspan="8">Loading...</td></tr></tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>#</th><th>Venue Name</th><th>Type</th><th>Location</th><th>Capacity</th><th>Status</th><th>Current Booker</th><th>Actions</th></tr></thead>
+                    <tbody id="pvenues-tbody"><tr class="empty-row"><td colspan="8">Loading...</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -272,10 +276,12 @@
                 <div class="ph-title">Admin Overview — Login &amp; Student Count</div>
                 <button class="btn btn-outline btn-sm" onclick="loadAdminOverview()">↻ Refresh</button>
             </div>
-            <table>
-                <thead><tr><th>Site / Class</th><th>Type</th><th>Admin</th><th>Venue</th><th>Cabin</th><th>Registered Students</th><th>Logged In Today</th></tr></thead>
-                <tbody id="admin-overview-tbody"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead><tr><th>Site / Class</th><th>Type</th><th>Admin</th><th>Venue</th><th>Cabin</th><th>Registered Students</th><th>Logged In Today</th></tr></thead>
+                    <tbody id="admin-overview-tbody"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
