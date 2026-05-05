@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAS — Admin | {{ site.org_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#0C0E13;--s1:#13161F;--card:#181C27;--card2:#1E2332;
+            --gold:#D4A843;--gold-g:rgba(212,168,67,.20);--gold-d:rgba(212,168,67,.09);
+            --text:#E8E2D5;--muted:#6B6760;--muted2:#3E3C38;
+            --green:#2D7A4F;--green-d:rgba(45,122,79,.10);--green-t:#5DBE8A;
+            --red:#8B2525;--red-d:rgba(139,37,37,.10);--red-t:#E07070;
+            --amber-t:#D4A843;--amber-d:rgba(212,168,67,.10);
+            --blue:#3D6BE8;--blue-d:rgba(61,107,232,.10);--blue-t:#7B9BF0;
+            --border:rgba(255,255,255,.06);--border-s:rgba(255,255,255,.11);
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+
+        /* LAYOUT */
+        .layout{display:flex;min-height:100vh;}
+        .sidebar{
+            width:210px;flex-shrink:0;background:var(--s1);
+            border-right:1px solid var(--border);
+            padding:20px 12px;display:flex;flex-direction:column;
+            position:sticky;top:0;height:100vh;overflow-y:auto;
+        }
+        .sb-brand{display:flex;align-items:center;gap:9px;padding:0 5px;margin-bottom:20px;}
+        .sb-dot{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--gold),#B8922A);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:11px;color:#0C0E13;font-weight:900;}
+        .sb-title{font-family:'Playfair Display',serif;font-size:14px;color:var(--text);}
+        .sb-site{padding:9px 11px;background:var(--gold-d);border:1px solid rgba(212,168,67,.15);border-radius:9px;margin-bottom:20px;}
+        .sb-site-l{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--gold);margin-bottom:2px;}
+        .sb-site-n{font-size:13px;font-weight:600;color:var(--text);}
+        .sb-site-v{font-size:10px;color:var(--muted);margin-top:2px;}
+        .sb-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);padding:0 6px;margin:14px 0 5px;}
+        .nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'Outfit',sans-serif;transition:all .2s;text-decoration:none;}
+        .nav-item:hover{background:var(--card);color:var(--text);}
+        .nav-item.active{background:var(--gold-d);color:var(--gold);}
+        .ni-ic{width:16px;text-align:center;font-size:13px;}
+        .sb-footer{margin-top:auto;}
+        .sb-user{display:flex;align-items:center;gap:9px;padding:11px;background:var(--card);border-radius:9px;margin-bottom:7px;}
+        .su-av{width:28px;height:28px;border-radius:7px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:13px;}
+        .su-name{font-size:12px;font-weight:600;color:var(--text);}
+        .su-role{font-size:10px;color:var(--muted);}
+        .sb-logout{width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;}
+        .sb-logout:hover{border-color:var(--red-t);color:var(--red-t);}
+
+        /* MAIN */
+        .main{flex:1;overflow-y:auto;}
+        .topbar{padding:16px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;background:rgba(12,14,19,.88);backdrop-filter:blur(16px);}
+        .tb-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);}
+        .tb-right{display:flex;align-items:center;gap:8px;}
+        input[type="date"].dp{padding:7px 11px;background:var(--card);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;cursor:pointer;}
+        input[type="date"].dp:focus{border-color:rgba(212,168,67,.4);}
+        .btn{padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;border:1px solid transparent;}
+        .btn-gold{background:linear-gradient(135deg,var(--gold),#B8922A);color:#0C0E13;border:none;}
+        .btn-gold:hover{transform:translateY(-1px);box-shadow:0 5px 16px var(--gold-g);}
+        .btn-outline{background:none;border-color:var(--border);color:var(--muted);}
+        .btn-outline:hover{border-color:var(--border-s);color:var(--text);}
+        .btn-danger{background:none;border-color:rgba(139,37,37,.3);color:var(--red-t);}
+        .btn-danger:hover{background:var(--red-d);}
+        .btn-success{background:none;border-color:rgba(45,122,79,.3);color:var(--green-t);}
+        .btn-success:hover{background:var(--green-d);}
+        .btn-sm{padding:5px 11px;font-size:11px;}
+        .btn-blue{background:linear-gradient(135deg,var(--blue),#2850CC);color:white;border:none;}
+        .btn-blue:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(61,107,232,.25);}
+
+        .content{padding:28px 32px 60px;}
+
+        /* STATS */
+        .stat-row{display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;}
+        .stat-pill{flex:1;min-width:100px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden;}
+        .stat-pill::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+        .sp-g::after{background:var(--gold);}
+        .sp-gr::after{background:var(--green-t);}
+        .sp-r::after{background:var(--red-t);}
+        .sp-a::after{background:var(--amber-t);}
+        .sp-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px;}
+        .sp-num{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;line-height:1;}
+        .sp-g .sp-num{color:var(--gold);}
+        .sp-gr .sp-num{color:var(--green-t);}
+        .sp-r .sp-num{color:var(--red-t);}
+        .sp-a .sp-num{color:var(--amber-t);}
+
+        /* PANEL */
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px;}
+        .panel-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+        .ph-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);}
+        .ph-right{display:flex;gap:6px;align-items:center;}
+
+        /* TABLE */
+        .t-wrap{overflow-x:auto;}
+        table{width:100%;border-collapse:collapse;}
+        thead th{text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:11px 18px;background:var(--s1);border-bottom:1px solid var(--border);}
+        tbody td{padding:13px 18px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+        tbody tr:last-child td{border-bottom:none;}
+        tbody tr:hover td{background:rgba(255,255,255,.012);}
+        .roll{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+        .s-name{font-weight:600;color:var(--text);}
+
+        .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;}
+        .badge::before{content:'';width:4px;height:4px;border-radius:50%;}
+        .b-present{background:var(--green-d);color:var(--green-t);}
+        .b-present::before{background:var(--green-t);}
+        .b-absent{background:var(--red-d);color:var(--red-t);}
+        .b-absent::before{background:var(--red-t);animation:bd 1.5s infinite;}
+        .b-pending{background:var(--amber-d);color:var(--amber-t);}
+        .b-pending::before{background:var(--amber-t);}
+        .b-approved{background:var(--green-d);color:var(--green-t);}
+        .b-approved::before{background:var(--green-t);}
+        .b-denied{background:var(--red-d);color:var(--red-t);}
+        .b-denied::before{background:var(--red-t);}
+        @keyframes bd{0%,100%{opacity:1}50%{opacity:.2}}
+
+        .pct-w{min-width:90px;}
+        .pct-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:3px;}
+        .pct-bar{height:3px;border-radius:2px;background:var(--s1);overflow:hidden;}
+        .pct-fill{height:100%;border-radius:2px;}
+        .pf-g{background:var(--green-t);}
+        .pf-w{background:var(--amber-t);}
+        .pf-b{background:var(--red-t);}
+        .action-row{display:flex;gap:5px;flex-wrap:wrap;}
+        .empty-row td{text-align:center;padding:44px!important;color:var(--muted);}
+
+        /* MODAL */
+        .modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+        .modal-bd.open{display:flex;}
+        .modal{background:var(--card);border:1px solid var(--border-s);border-radius:16px;padding:30px;width:100%;max-width:460px;animation:mi .3s ease;}
+        @keyframes mi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .modal-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:3px;}
+        .modal-sub{font-size:12px;color:var(--muted);margin-bottom:22px;}
+        .mf{margin-bottom:14px;}
+        .mf label{display:block;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+        .mf input,.mf select,.mf textarea{width:100%;padding:10px 12px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;resize:none;}
+        .mf input:focus,.mf select:focus,.mf textarea:focus{border-color:rgba(212,168,67,.4);}
+        .mf input::placeholder,.mf textarea::placeholder{color:var(--muted);}
+        .mf select option{background:var(--s1);}
+        .mf-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .m-pass-note{font-size:11px;color:var(--amber-t);background:var(--amber-d);border:1px solid rgba(212,168,67,.2);padding:7px 10px;border-radius:7px;margin-bottom:12px;}
+        .m-err{display:none;font-size:11px;color:var(--red-t);background:var(--red-d);border:1px solid rgba(139,37,37,.2);padding:8px 10px;border-radius:7px;margin-bottom:12px;}
+        .m-ok{display:none;font-size:11px;color:var(--green-t);background:var(--green-d);border:1px solid rgba(45,122,79,.2);padding:8px 10px;border-radius:7px;margin-bottom:12px;}
+        .m-actions{display:flex;gap:8px;margin-top:20px;}
+        .modal-video{width:100%;border-radius:8px;background:#050608;border:1px solid var(--border);margin-bottom:10px;aspect-ratio:4/3;object-fit:cover;transform:scaleX(-1);}
+        .tab-panel{display:none;} .tab-panel.active{display:block;}
+        @media(max-width:800px){.sidebar{display:none;}.content{padding:16px;}}
+    </style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sb-brand">
+        <div class="sb-dot">FR</div>
+        <div class="sb-title">FRAS Admin</div>
+    </div>
+    <div class="sb-site">
+        <div class="sb-site-l">Managing</div>
+        <div class="sb-site-n">{{ site.org_name }}</div>
+        {% if site.venue_number %}<div class="sb-site-v">📍 {{ site.venue_number }}</div>{% endif %}
+        {% if site.cabin_number %}<div class="sb-site-v">🏢 Cabin: {{ site.cabin_number }}</div>{% endif %}
+    </div>
+    <div class="sb-lbl">Navigation</div>
+    <button class="nav-item active" id="nb-roster"  onclick="showTab('roster',this)"><span class="ni-ic">👥</span>Roster</button>
+    <button class="nav-item"        id="nb-absents" onclick="showTab('absents',this)"><span class="ni-ic">✕</span>Absences</button>
+    <button class="nav-item"        id="nb-venues"  onclick="showTab('venues',this)"><span class="ni-ic">🏛</span>Book Venue</button>
+    <div class="sb-lbl">System</div>
+    <a href="/" class="nav-item" style="text-decoration:none;"><span class="ni-ic">🏠</span>Home</a>
+    <div class="sb-footer">
+        <div class="sb-user">
+            <div class="su-av">🔐</div>
+            <div><div class="su-name">{{ site.org_name }}</div><div class="su-role">Class Admin</div></div>
+        </div>
+        <a href="/logout" class="sb-logout">→ Logout</a>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+    <div class="tb-title" id="tb-title">Student Roster</div>
+    <div class="tb-right">
+        <input type="date" class="dp" id="date-picker" onchange="refreshData()">
+        <button class="btn btn-gold" id="tb-add-btn" onclick="openAddModal()">+ Add Student</button>
+    </div>
+</div>
+
+<div class="content">
+    <div class="stat-row">
+        <div class="stat-pill sp-g"><div class="sp-lbl">Total</div><div class="sp-num" id="s-total">—</div></div>
+        <div class="stat-pill sp-gr"><div class="sp-lbl">Present</div><div class="sp-num" id="s-present">—</div></div>
+        <div class="stat-pill sp-r"><div class="sp-lbl">Absent</div><div class="sp-num" id="s-absent">—</div></div>
+        <div class="stat-pill sp-a"><div class="sp-lbl">Rate</div><div class="sp-num" id="s-rate" style="font-size:18px;padding-top:4px;">—</div></div>
+    </div>
+
+    <!-- ROSTER TAB -->
+    <div class="tab-panel active" id="tab-roster">
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">Registered Students</div>
+                <div class="ph-right">
+                    <input type="search" id="search-in" name="student_filter_query" placeholder="Search..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-form-type="other" style="padding:6px 11px;background:var(--s1);border:1px solid var(--border);border-radius:7px;color:var(--text);font-size:12px;outline:none;width:160px;" oninput="filterStudents(this.value)">
+                </div>
+            </div>
+            <div class="t-wrap">
+                <table>
+                    <thead><tr><th>Roll No.</th><th>Name</th><th>Dept.</th><th>Status</th><th>Attendance</th><th>Actions</th></tr></thead>
+                    <tbody id="student-tbody"><tr class="empty-row"><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABSENTS TAB -->
+    <div class="tab-panel" id="tab-absents">
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">Absent Today</div>
+                <div class="ph-right"><button class="btn btn-outline btn-sm" onclick="showTab('roster',document.getElementById('nb-roster'))">← Roster</button></div>
+            </div>
+            <div class="t-wrap">
+                <table>
+                    <thead><tr><th>Roll No.</th><th>Name</th><th>Action</th></tr></thead>
+                    <tbody id="absent-tbody"><tr class="empty-row"><td colspan="3">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VENUES TAB -->
+    <div class="tab-panel" id="tab-venues">
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">Request a Public Venue</div>
+            </div>
+            <div style="padding:20px;">
+                <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
+                    Select an available public venue below and submit a booking request to the Super Admin.
+                    You will be identified by your admin name. Requests are subject to approval.
+                </div>
+                <!-- Public venues list -->
+                <div id="public-venues-list" style="margin-bottom:24px;"></div>
+                <div class="m-err" id="req-err" style="display:none;"></div>
+                <div class="m-ok"  id="req-ok"  style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- My requests -->
+        <div class="panel">
+            <div class="panel-hdr"><div class="ph-title">My Venue Requests</div><div class="ph-right"><button class="btn btn-outline btn-sm" onclick="loadMyRequests()">↻ Refresh</button></div></div>
+            <div class="t-wrap">
+                <table>
+                    <thead><tr><th>Venue</th><th>Location</th><th>Date</th><th>Time</th><th>Purpose</th><th>Status</th></tr></thead>
+                    <tbody id="my-req-tbody"><tr class="empty-row"><td colspan="6">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-bd" id="modal-add">
+    <div class="modal">
+        <div class="modal-title">Add New Student</div>
+        <div class="modal-sub">Capture face biometric. Admin password required.</div>
+        <video class="modal-video" id="add-video" autoplay muted playsinline></video>
+        <div style="display:flex;gap:7px;margin-bottom:14px;">
+            <button class="btn btn-outline btn-sm" id="add-cam-btn" onclick="startAddCam()">Activate Camera</button>
+            <span style="font-size:11px;color:var(--muted);padding:5px 0;">← Required</span>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Full Name *</label><input type="text" id="add-name" placeholder="Student name"></div>
+            <div class="mf"><label>Roll Number *</label><input type="text" id="add-roll" placeholder="e.g. CS-001"></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Age</label><input type="number" id="add-age" placeholder="20"></div>
+            <div class="mf"><label>Dept / Section</label><input type="text" id="add-class" placeholder="CSE-A"></div>
+        </div>
+        <div class="mf"><label>Admin Password *</label><input type="password" id="add-pass" placeholder="Your admin password"></div>
+        <div class="m-err" id="add-err"></div>
+        <div class="m-ok"  id="add-ok"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 18px;" onclick="closeModal('modal-add')">Cancel</button>
+            <button class="btn btn-gold"    style="flex:1;"           onclick="submitAddStudent()">Capture &amp; Add</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bd" id="modal-edit">
+    <div class="modal">
+        <div class="modal-title">Edit Student</div>
+        <div class="modal-sub">Modify student details. Password required.</div>
+        <input type="hidden" id="edit-id">
+        <div class="mf-row2">
+            <div class="mf"><label>Name *</label><input type="text" id="edit-name"></div>
+            <div class="mf"><label>Roll *</label><input type="text" id="edit-roll"></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Age</label><input type="number" id="edit-age"></div>
+            <div class="mf"><label>Dept</label><input type="text" id="edit-class"></div>
+        </div>
+        <div class="mf"><label>Admin Password *</label><input type="password" id="edit-pass" placeholder="Your password"></div>
+        <div class="m-err" id="edit-err"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 18px;" onclick="closeModal('modal-edit')">Cancel</button>
+            <button class="btn btn-gold"    style="flex:1;"           onclick="submitEdit()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- MARK PRESENT MODAL -->
+<div class="modal-bd" id="modal-mark">
+    <div class="modal">
+        <div class="modal-title">Mark Present</div>
+        <div class="modal-sub" id="mark-sub"></div>
+        <input type="hidden" id="mark-id">
+        <div class="m-pass-note">⚠ Admin password required to manually mark attendance.</div>
+        <div class="mf"><label>Admin Password *</label><input type="password" id="mark-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')submitMark()"></div>
+        <div class="m-err" id="mark-err"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 18px;" onclick="closeModal('modal-mark')">Cancel</button>
+            <button class="btn btn-success" style="flex:1;" onclick="submitMark()">✓ Mark Present</button>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-bd" id="modal-delete">
+    <div class="modal">
+        <div class="modal-title">Remove Student</div>
+        <div class="modal-sub" id="delete-sub"></div>
+        <input type="hidden" id="delete-id">
+        <div class="m-pass-note">⚠ This cannot be undone. All attendance records deleted too.</div>
+        <div class="mf"><label>Admin Password *</label><input type="password" id="delete-pass" placeholder="Your password" onkeydown="if(event.key==='Enter')submitDelete()"></div>
+        <div class="m-err" id="delete-err"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 18px;" onclick="closeModal('modal-delete')">Cancel</button>
+            <button class="btn btn-danger"  style="flex:1;" onclick="submitDelete()">✕ Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- VENUE REQUEST MODAL -->
+<div class="modal-bd" id="modal-venue-req">
+    <div class="modal">
+        <div class="modal-title">Request Venue</div>
+        <div class="modal-sub" id="vreq-sub"></div>
+        <input type="hidden" id="vreq-venue-id">
+        <div class="mf"><label>Booking Date *</label><input type="date" id="vreq-date"></div>
+        <div class="mf-row2">
+            <div class="mf"><label>Start Time *</label><input type="time" id="vreq-start"></div>
+            <div class="mf"><label>End Time *</label><input type="time" id="vreq-end"></div>
+        </div>
+        <div class="mf"><label>Purpose / Event</label><textarea id="vreq-purpose" rows="2" placeholder="e.g. Seminar, Exam, Workshop"></textarea></div>
+        <div class="m-err" id="vreq-err"></div>
+        <div class="m-ok"  id="vreq-ok"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 18px;" onclick="closeModal('modal-venue-req')">Cancel</button>
+            <button class="btn btn-blue"    style="flex:1;" onclick="submitVenueRequest()">Submit Request</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let addStream=null, currentDate='', allStudents=[];
+
+window.onload=()=>{
+    const d=new Date();
+    currentDate=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    document.getElementById('date-picker').value=currentDate;
+    document.getElementById('search-in').value='';
+    refreshData();
+    // Chrome autofill happens AFTER onload, so clear again after a delay
+    setTimeout(()=>{
+        const si=document.getElementById('search-in');
+        if(si.value){si.value='';renderStudents(allStudents);}
+    },500);
+    setTimeout(()=>{
+        const si=document.getElementById('search-in');
+        if(si.value){si.value='';renderStudents(allStudents);}
+    },1500);
+};
+
+function refreshData(){
+    currentDate=document.getElementById('date-picker').value;
+    loadStudents();
+    if(document.getElementById('tab-absents').classList.contains('active')) loadAbsents();
+}
+
+// TABS
+function showTab(name,btn){
+    ['roster','absents','venues'].forEach(t=>{
+        document.getElementById('tab-'+t).classList.remove('active');
+    });
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+    const titles={roster:'Student Roster',absents:'Absent Students',venues:'Book a Public Venue'};
+    document.getElementById('tb-title').textContent=titles[name];
+    document.getElementById('tb-add-btn').style.display=name==='roster'?'':'none';
+    if(name==='absents') loadAbsents();
+    if(name==='venues'){loadPublicVenues(); loadMyRequests();}
+}
+
+// STUDENTS
+async function loadStudents(){
+    try{
+        const res=await fetch(`/api/admin/students?date=${currentDate}`);
+        if(!res.ok){console.warn('Students API error:',res.status);return;}
+        const students=await res.json();
+        if(!Array.isArray(students)){console.warn('Students API returned non-array:',students);return;}
+        allStudents=students;
+        renderStudents(students);
+    }catch(e){
+        console.error('loadStudents error:',e);
+    }
+}
+
+function renderStudents(students){
+    const present=students.filter(s=>s.is_present).length;
+    document.getElementById('s-total').textContent=students.length;
+    document.getElementById('s-present').textContent=present;
+    document.getElementById('s-absent').textContent=students.length-present;
+    const rate=students.length>0?Math.round((present/students.length)*100):0;
+    document.getElementById('s-rate').textContent=rate+'%';
+    const tbody=document.getElementById('student-tbody');
+    if(!students.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6">No students yet. Add one using the button above.</td></tr>';return;}
+    tbody.innerHTML=students.map(s=>{
+        const tc=s.total_classes||30;
+        const pct=s.total_attended>0?Math.min(100,Math.round((s.total_attended/tc)*100)):0;
+        const pc=pct>=75?'pf-g':pct>=50?'pf-w':'pf-b';
+        return `<tr>
+            <td><span class="roll">${s.roll_number}</span></td>
+            <td><span class="s-name">${s.name}</span></td>
+            <td style="font-size:12px;color:var(--muted)">${s.class_name||'—'}</td>
+            <td>${s.is_present?'<span class="badge b-present">Present</span>':'<span class="badge b-absent">Absent</span>'}</td>
+            <td><div class="pct-w"><div class="pct-lbl">${pct}%</div><div class="pct-bar"><div class="pct-fill ${pc}" style="width:${pct}%"></div></div></div></td>
+            <td><div class="action-row">
+                <button type="button" class="btn btn-success btn-sm" onclick="event.stopPropagation();openMarkModal(${s.id},\`${s.name}\`)" ${s.is_present?'disabled':''}>✓ Present</button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();openEditModal(${s.id},\`${s.name}\`,\`${s.roll_number}\`,${s.age||0},\`${s.class_name||''}\`)">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm"  onclick="event.stopPropagation();openDeleteModal(${s.id},\`${s.name}\`)">Del</button>
+            </div></td>
+        </tr>`;
+    }).join('');
+}
+
+function filterStudents(q){
+    if(!q||!q.trim()){renderStudents(allStudents);return;}
+    const f=allStudents.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.roll_number.toLowerCase().includes(q.toLowerCase()));
+    renderStudents(f);
+}
+
+// ABSENTS
+async function loadAbsents(){
+    try{
+        const absents=await fetch(`/api/admin/absents?date=${currentDate}`).then(r=>r.json());
+        const tbody=document.getElementById('absent-tbody');
+        if(!absents.length){tbody.innerHTML='<tr class="empty-row"><td colspan="3">All students present!</td></tr>';return;}
+        tbody.innerHTML=absents.map(s=>`
+            <tr>
+                <td><span class="roll">${s.roll_number}</span></td>
+                <td><span class="s-name">${s.name}</span></td>
+                <td><button type="button" class="btn btn-success btn-sm" onclick="event.stopPropagation();openMarkModal(${s.id},\`${s.name}\`)">✓ Mark Present</button></td>
+            </tr>`).join('');
+    }catch{document.getElementById('absent-tbody').innerHTML='<tr class="empty-row"><td colspan="3">Server error.</td></tr>';}
+}
+
+// PUBLIC VENUES
+async function loadPublicVenues(){
+    try{
+        const venues=await fetch('/api/public_venues?status=all').then(r=>r.json());
+        const el=document.getElementById('public-venues-list');
+        if(!venues.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:12px 0;">No public venues available yet.</div>';return;}
+        el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;">`+
+        venues.map(v=>{
+            const avail=v.status==='available';
+            const until=v.booked_until?` until ${v.booked_until.substring(0,16)}`:'';
+            return `
+            <div style="background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px;">
+                <div style="font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">${v.venue_type||'Hall'}</div>
+                <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:3px;">${v.venue_name}</div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${v.venue_number||'—'}</div>
+                <div style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;margin-bottom:10px;"
+                     class="${avail?'badge b-present':'badge b-absent'}">
+                    ${avail?'Available':'Occupied'}${!avail&&v.current_booker?' — '+v.current_booker+until:''}
+                </div>
+                <br>
+                <button class="btn btn-blue btn-sm" style="margin-top:4px;" onclick="openVenueReqModal(${v.id},'${esc(v.venue_name)}')" ${!avail?'disabled':''}>
+                    ${avail?'Request This Venue':'Unavailable'}
+                </button>
+            </div>`;
+        }).join('')+'</div>';
+    }catch{document.getElementById('public-venues-list').innerHTML='<div style="color:var(--muted);font-size:13px;">Failed to load venues.</div>';}
+}
+
+async function loadMyRequests(){
+    try{
+        const rows=await fetch('/api/admin/my_venue_requests').then(r=>r.json());
+        const tbody=document.getElementById('my-req-tbody');
+        if(!rows.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6">No requests submitted yet.</td></tr>';return;}
+        tbody.innerHTML=rows.map(r=>`
+            <tr>
+                <td style="font-weight:600;font-size:13px;">${r.venue_name}</td>
+                <td style="font-size:12px;color:var(--muted);">${r.venue_number||'—'}</td>
+                <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${r.booking_date}</td>
+                <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${r.start_time?.substring(0,5)||''}–${r.end_time?.substring(0,5)||''}</td>
+                <td style="font-size:12px;color:var(--muted);">${r.purpose||'—'}</td>
+                <td><span class="badge b-${r.status}">${r.status}</span></td>
+            </tr>`).join('');
+    }catch{document.getElementById('my-req-tbody').innerHTML='<tr class="empty-row"><td colspan="6">Server error.</td></tr>';}
+}
+
+// MODALS
+function closeModal(id){
+    document.getElementById(id).classList.remove('open');
+    if(id==='modal-add'&&addStream){addStream.getTracks().forEach(t=>t.stop());addStream=null;}
+}
+document.querySelectorAll('.modal-bd').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
+function clrMsg(ids){ids.forEach(id=>{const e=document.getElementById(id);if(e){e.style.display='none';e.textContent='';}}); }
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function showOk(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function esc(s){return String(s||'').replace(/'/g,"\\'");}
+
+// ADD
+function openAddModal(){
+    clrMsg(['add-err','add-ok']);
+    ['add-name','add-roll','add-age','add-class','add-pass'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('add-cam-btn').style.display='';
+    document.getElementById('modal-add').classList.add('open');
+    // Auto-activate camera
+    startAddCam();
+}
+async function startAddCam(){
+    try{
+        addStream=await navigator.mediaDevices.getUserMedia({video:{width:480,height:360}});
+        document.getElementById('add-video').srcObject=addStream;
+        document.getElementById('add-cam-btn').style.display='none';
+    }catch{showErr('add-err','Camera access denied.');}
+}
+async function submitAddStudent(){
+    clrMsg(['add-err','add-ok']);
+    const name=document.getElementById('add-name').value.trim();
+    const roll=document.getElementById('add-roll').value.trim();
+    const pass=document.getElementById('add-pass').value;
+    if(!name||!roll||!pass){showErr('add-err','Name, Roll Number and Password required.');return;}
+    if(!addStream){showErr('add-err','Activate camera first.');return;}
+    const video=document.getElementById('add-video');
+    const canvas=document.createElement('canvas');
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    canvas.getContext('2d').drawImage(video,0,0);
+    const btn=document.querySelector('#modal-add .btn-gold');
+    btn.textContent='Processing...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/admin/add_student',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,roll_number:roll,age:document.getElementById('add-age').value||0,
+                class_name:document.getElementById('add-class').value||'N/A',password:pass,image:canvas.toDataURL('image/jpeg')})});
+        const data=await res.json();
+        if(data.status==='success'){showOk('add-ok',data.message);setTimeout(()=>{closeModal('modal-add');loadStudents();},1400);}
+        else showErr('add-err',data.message);
+    }catch{showErr('add-err','Server error.');}
+    btn.textContent='Capture & Add';btn.disabled=false;
+}
+
+// EDIT
+function openEditModal(id,name,roll,age,cls){
+    clrMsg(['edit-err']);
+    document.getElementById('edit-id').value=id;
+    document.getElementById('edit-name').value=name;
+    document.getElementById('edit-roll').value=roll;
+    document.getElementById('edit-age').value=age;
+    document.getElementById('edit-class').value=cls;
+    document.getElementById('edit-pass').value='';
+    document.getElementById('modal-edit').classList.add('open');
+}
+async function submitEdit(){
+    clrMsg(['edit-err']);
+    const pass=document.getElementById('edit-pass').value;
+    if(!pass){showErr('edit-err','Password required.');return;}
+    const btn=document.querySelector('#modal-edit .btn-gold');btn.textContent='Saving...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/admin/edit_student',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({student_id:document.getElementById('edit-id').value,name:document.getElementById('edit-name').value,
+                roll_number:document.getElementById('edit-roll').value,age:document.getElementById('edit-age').value,
+                class_name:document.getElementById('edit-class').value,password:pass})});
+        const data=await res.json();
+        if(data.status==='success'){closeModal('modal-edit');loadStudents();}
+        else showErr('edit-err',data.message);
+    }catch{showErr('edit-err','Server error.');}
+    btn.textContent='Save Changes';btn.disabled=false;
+}
+
+// MARK PRESENT
+function openMarkModal(id,name){
+    clrMsg(['mark-err']);
+    document.getElementById('mark-id').value=id;
+    document.getElementById('mark-sub').textContent=`Manually marking: ${name} for ${currentDate}`;
+    document.getElementById('mark-pass').value='';
+    document.getElementById('modal-mark').classList.add('open');
+    setTimeout(()=>document.getElementById('mark-pass').focus(),300);
+}
+async function submitMark(){
+    clrMsg(['mark-err']);
+    const pass=document.getElementById('mark-pass').value;
+    if(!pass){showErr('mark-err','Password required.');return;}
+    const btn=document.querySelector('#modal-mark .btn-success');btn.textContent='Marking...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/admin/mark_present',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({student_id:document.getElementById('mark-id').value,date:currentDate,password:pass})});
+        const data=await res.json();
+        if(data.status==='success'||data.status==='warning'){closeModal('modal-mark');loadStudents();if(document.getElementById('tab-absents').classList.contains('active'))loadAbsents();}
+        else showErr('mark-err',data.message);
+    }catch{showErr('mark-err','Server error.');}
+    btn.textContent='✓ Mark Present';btn.disabled=false;
+}
+
+// DELETE
+function openDeleteModal(id,name){
+    clrMsg(['delete-err']);
+    document.getElementById('delete-id').value=id;
+    document.getElementById('delete-sub').textContent=`Deleting: ${name}. This is permanent.`;
+    document.getElementById('delete-pass').value='';
+    document.getElementById('modal-delete').classList.add('open');
+    setTimeout(()=>document.getElementById('delete-pass').focus(),300);
+}
+async function submitDelete(){
+    clrMsg(['delete-err']);
+    const pass=document.getElementById('delete-pass').value;
+    if(!pass){showErr('delete-err','Password required.');return;}
+    const btn=document.querySelector('#modal-delete .btn-danger');btn.textContent='Deleting...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/admin/delete_student',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({student_id:document.getElementById('delete-id').value,password:pass})});
+        const data=await res.json();
+        if(data.status==='success'){closeModal('modal-delete');loadStudents();}
+        else showErr('delete-err',data.message);
+    }catch{showErr('delete-err','Server error.');}
+    btn.textContent='✕ Delete';btn.disabled=false;
+}
+
+// VENUE REQUEST
+function openVenueReqModal(id,name){
+    clrMsg(['vreq-err','vreq-ok']);
+    document.getElementById('vreq-venue-id').value=id;
+    document.getElementById('vreq-sub').textContent=`Requesting: ${name}`;
+    const _vd=new Date(); document.getElementById('vreq-date').value=_vd.getFullYear()+'-'+String(_vd.getMonth()+1).padStart(2,'0')+'-'+String(_vd.getDate()).padStart(2,'0');
+    document.getElementById('vreq-start').value='';
+    document.getElementById('vreq-end').value='';
+    document.getElementById('vreq-purpose').value='';
+    document.getElementById('modal-venue-req').classList.add('open');
+}
+async function submitVenueRequest(){
+    clrMsg(['vreq-err','vreq-ok']);
+    const date=document.getElementById('vreq-date').value;
+    const start=document.getElementById('vreq-start').value;
+    const end=document.getElementById('vreq-end').value;
+    if(!date||!start||!end){showErr('vreq-err','Date, start time and end time are required.');return;}
+    if(start>=end){showErr('vreq-err','End time must be after start time.');return;}
+    const btn=document.querySelector('#modal-venue-req .btn-blue');btn.textContent='Submitting...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/admin/request_venue',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({venue_id:document.getElementById('vreq-venue-id').value,
+                booking_date:date,start_time:start,end_time:end,
+                purpose:document.getElementById('vreq-purpose').value})});
+        const data=await res.json();
+        if(data.status==='success'){
+            showOk('vreq-ok',data.message);
+            setTimeout(()=>{closeModal('modal-venue-req');loadPublicVenues();loadMyRequests();},1600);
+        }else showErr('vreq-err',data.message);
+    }catch{showErr('vreq-err','Server error.');}
+    btn.textContent='Submit Request';btn.disabled=false;
+}
+</script>
+</body>
+</html>

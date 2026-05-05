@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAS — Super Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg:#080A0F;--s1:#0F1218;--card:#141820;--card2:#1A2030;
+            --blue:#3D6BE8;--blue-g:rgba(61,107,232,.20);--blue-d:rgba(61,107,232,.08);
+            --gold:#D4A843;--gold-d:rgba(212,168,67,.08);--gold-g:rgba(212,168,67,.20);
+            --text:#DDE4F0;--muted:#525D72;--muted2:#2A3040;
+            --green:#2D7A4F;--green-d:rgba(45,122,79,.10);--green-t:#5DBE8A;
+            --red:#8B2525;--red-d:rgba(139,37,37,.10);--red-t:#E07070;
+            --amber-t:#D4A843;--amber-d:rgba(212,168,67,.10);
+            --border:rgba(255,255,255,.06);--border-s:rgba(255,255,255,.10);
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;}
+
+        .layout{display:flex;min-height:100vh;}
+        .sidebar{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+        .sb-logo{display:flex;align-items:center;gap:9px;padding:0 5px;margin-bottom:24px;}
+        .sb-ic{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue),#2850CC);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:12px;color:white;font-weight:900;}
+        .sb-nm{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);}
+        .sb-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted2);padding:0 6px;margin:14px 0 5px;}
+        .nav-btn{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'Outfit',sans-serif;transition:all .2s;}
+        .nav-btn:hover{background:var(--card);color:var(--text);}
+        .nav-btn.active{background:var(--blue-d);color:var(--blue);}
+        .nb-ic{width:16px;text-align:center;font-size:12px;}
+        .nb-badge{margin-left:auto;background:var(--amber-t);color:#000;font-size:9px;font-weight:700;padding:1px 6px;border-radius:100px;}
+        .sb-footer{margin-top:auto;}
+        .sa-badge{padding:10px 11px;background:var(--card);border-radius:9px;margin-bottom:7px;display:flex;align-items:center;gap:9px;}
+        .sab-ic{width:28px;height:28px;border-radius:7px;background:var(--blue-d);display:flex;align-items:center;justify-content:center;font-size:12px;}
+        .sab-nm{font-size:12px;font-weight:600;color:var(--text);}
+        .sab-role{font-size:10px;color:var(--muted);}
+        .logout-btn{width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px;}
+        .logout-btn:hover{border-color:var(--red-t);color:var(--red-t);}
+
+        .main{flex:1;overflow-y:auto;}
+        .topbar{padding:15px 30px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;background:rgba(8,10,15,.88);backdrop-filter:blur(16px);}
+        .tb-title{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);}
+        .tb-clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+        .content{padding:26px 30px 60px;}
+
+        /* STATS */
+        .stat-row{display:flex;gap:12px;margin-bottom:26px;flex-wrap:wrap;}
+        .sc{flex:1;min-width:100px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden;}
+        .sc::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+        .sc-b::after{background:var(--blue);}
+        .sc-g::after{background:var(--green-t);}
+        .sc-gold::after{background:var(--gold);}
+        .sc-r::after{background:var(--red-t);}
+        .sc-a::after{background:var(--amber-t);}
+        .sc-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:6px;}
+        .sc-num{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:600;line-height:1;}
+        .sc-b .sc-num{color:var(--blue);}
+        .sc-g .sc-num{color:var(--green-t);}
+        .sc-gold .sc-num{color:var(--gold);}
+        .sc-r .sc-num{color:var(--red-t);}
+        .sc-a .sc-num{color:var(--amber-t);}
+
+        /* PANEL */
+        .panel{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:20px;}
+        .panel-hdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+        .ph-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);}
+        .ph-right{display:flex;gap:6px;align-items:center;}
+
+        /* FORM */
+        .form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:end;padding:16px 20px;}
+        .fg{display:flex;flex-direction:column;gap:5px;}
+        .fg label{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);}
+        .fg input,.fg select{padding:9px 11px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;}
+        .fg input:focus,.fg select:focus{border-color:rgba(61,107,232,.5);}
+        .fg input::placeholder{color:var(--muted);}
+        .fg select option{background:var(--s1);}
+
+        /* BUTTONS */
+        .btn{padding:8px 15px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;border:1px solid transparent;}
+        .btn-blue{background:linear-gradient(135deg,var(--blue),#2850CC);color:white;border:none;}
+        .btn-blue:hover{transform:translateY(-1px);box-shadow:0 5px 16px var(--blue-g);}
+        .btn-gold{background:linear-gradient(135deg,var(--gold),#B8922A);color:#080A0F;border:none;}
+        .btn-gold:hover{transform:translateY(-1px);}
+        .btn-outline{background:none;border-color:var(--border);color:var(--muted);}
+        .btn-outline:hover{border-color:var(--border-s);color:var(--text);}
+        .btn-danger{background:none;border-color:rgba(139,37,37,.3);color:var(--red-t);}
+        .btn-danger:hover{background:var(--red-d);}
+        .btn-success{background:none;border-color:rgba(45,122,79,.3);color:var(--green-t);}
+        .btn-success:hover{background:var(--green-d);}
+        .btn-sm{padding:5px 11px;font-size:11px;}
+
+        /* TABLE */
+        table{width:100%;border-collapse:collapse;}
+        thead th{text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:10px 16px;background:var(--s1);border-bottom:1px solid var(--border);}
+        tbody td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;}
+        tbody tr:last-child td{border-bottom:none;}
+        tbody tr:hover td{background:rgba(255,255,255,.01);}
+        .mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+
+        .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;}
+        .badge::before{content:'';width:4px;height:4px;border-radius:50%;}
+        .b-blue{background:var(--blue-d);color:var(--blue);}
+        .b-blue::before{background:var(--blue);}
+        .b-gold{background:var(--gold-d);color:var(--gold);}
+        .b-gold::before{background:var(--gold);}
+        .b-green{background:var(--green-d);color:var(--green-t);}
+        .b-green::before{background:var(--green-t);}
+        .b-red{background:var(--red-d);color:var(--red-t);}
+        .b-red::before{background:var(--red-t);}
+        .b-amber{background:var(--amber-d);color:var(--amber-t);}
+        .b-amber::before{background:var(--amber-t);}
+        .b-muted{background:rgba(82,93,114,.12);color:var(--muted);}
+        .b-muted::before{background:var(--muted);}
+
+        .logged-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
+        .lg-yes{background:var(--green-t);}
+        .lg-no{background:var(--muted2);}
+
+        .pct-bar{height:3px;border-radius:2px;background:var(--card2);width:70px;overflow:hidden;margin-top:3px;}
+        .pct-fill{height:100%;border-radius:2px;background:var(--green-t);}
+
+        .empty-row td{text-align:center;padding:40px!important;color:var(--muted);}
+
+        /* MODAL */
+        .modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+        .modal-bd.open{display:flex;}
+        .modal{background:var(--card);border:1px solid var(--border-s);border-radius:15px;padding:28px;width:100%;max-width:500px;animation:mi .3s ease;}
+        @keyframes mi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        .modal-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:3px;}
+        .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+        .mf{margin-bottom:13px;}
+        .mf label{display:block;font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+        .mf input,.mf select{width:100%;padding:10px 12px;background:var(--s1);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;transition:border-color .2s;}
+        .mf input:focus,.mf select:focus{border-color:rgba(61,107,232,.5);}
+        .mf input::placeholder{color:var(--muted);}
+        .mf select option{background:var(--s1);}
+        .mf-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+        .m-err{display:none;font-size:11px;color:var(--red-t);background:var(--red-d);border:1px solid rgba(139,37,37,.2);padding:8px 10px;border-radius:7px;margin-bottom:12px;}
+        .m-actions{display:flex;gap:8px;margin-top:18px;}
+
+        .tab-panel{display:none;} .tab-panel.active{display:block;}
+        .req-filter-btns{display:flex;gap:6px;margin-bottom:14px;}
+        .rfb{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+        .rfb.active{background:var(--blue-d);color:var(--blue);border-color:rgba(61,107,232,.25);}
+
+        .req-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+        .rc-info{flex:1;min-width:200px;}
+        .rc-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px;}
+        .rc-detail{font-size:11px;color:var(--muted);}
+        .rc-actions{display:flex;gap:6px;}
+
+        @media(max-width:1100px){.form-grid{grid-template-columns:1fr 1fr;}}
+        @media(max-width:800px){.sidebar{display:none;}.content{padding:16px;}}
+    </style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sb-logo">
+        <div class="sb-ic">SA</div>
+        <div class="sb-nm">Super Admin</div>
+    </div>
+    <div class="sb-lbl">Management</div>
+    <button class="nav-btn active" id="nb-sites"    onclick="switchTab('sites',this)"><span class="nb-ic">🏛</span>Private Sites</button>
+    <button class="nav-btn"        id="nb-pvenues"  onclick="switchTab('pvenues',this)"><span class="nb-ic">🏟</span>Public Venues</button>
+    <button class="nav-btn"        id="nb-requests" onclick="switchTab('requests',this)">
+        <span class="nb-ic">📋</span>Venue Requests
+        <span class="nb-badge" id="sb-req-badge" style="display:none;"></span>
+    </button>
+    <button class="nav-btn"        id="nb-admins"   onclick="switchTab('admins',this)"><span class="nb-ic">👔</span>Admin Overview</button>
+    <button class="nav-btn"        id="nb-attend"   onclick="switchTab('attend',this)"><span class="nb-ic">📊</span>Attendance</button>
+    <div class="sb-lbl">System</div>
+    <a href="/" class="nav-btn" style="text-decoration:none;"><span class="nb-ic">🏠</span>Home</a>
+    <div class="sb-footer">
+        <div class="sa-badge">
+            <div class="sab-ic">🔑</div>
+            <div><div class="sab-nm">Super Admin</div><div class="sab-role">Full Access</div></div>
+        </div>
+        <a href="/logout" class="logout-btn">→ Logout</a>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+    <div class="tb-title" id="tb-title">Private Sites</div>
+    <div class="tb-clock" id="sa-clock"></div>
+</div>
+
+<div class="content">
+    <!-- STATS -->
+    <div class="stat-row">
+        <div class="sc sc-b"><div class="sc-lbl">Private Sites</div><div class="sc-num" id="ss-sites">—</div></div>
+        <div class="sc sc-gold"><div class="sc-lbl">Public Venues</div><div class="sc-num" id="ss-pv">—</div></div>
+        <div class="sc sc-g"><div class="sc-lbl">Total Students</div><div class="sc-num" id="ss-stu">—</div></div>
+        <div class="sc sc-a"><div class="sc-lbl">Pending Requests</div><div class="sc-num" id="ss-pend">—</div></div>
+        <div class="sc sc-b" style="--blue:#7B9BF0;"><div class="sc-lbl">Admins Logged Today</div><div class="sc-num" id="ss-logged" style="color:#7B9BF0;">—</div></div>
+    </div>
+
+    <!-- ── PRIVATE SITES TAB ── -->
+    <div class="tab-panel active" id="tab-sites">
+        <div class="panel">
+            <div class="panel-hdr"><div class="ph-title">Create Private Site / Class</div></div>
+            <div class="form-grid">
+                <div class="fg"><label>Name *</label><input type="text" id="ns-name" placeholder="e.g. Batch 2026 / Lab 101"></div>
+                <div class="fg"><label>Type</label>
+                    <select id="ns-type"><option>Classroom</option><option>Laboratory</option><option>Seminar Hall</option><option>Auditorium</option><option>Exam Hall</option><option>Other</option></select>
+                </div>
+                <div class="fg"><label>Venue / Room No.</label><input type="text" id="ns-venue" placeholder="e.g. Room 204, Block B"></div>
+                <div class="fg"><label>Admin Username</label><input type="text" id="ns-user" placeholder="Manager name"></div>
+                <div class="fg"><label>Admin Password *</label><input type="password" id="ns-pass" placeholder="Set password"></div>
+                <div class="fg"><label>Total Classes</label><input type="number" id="ns-total" value="30" min="1" placeholder="30"></div>
+                <div class="fg"><label>Open Time</label><input type="time" id="ns-open" value="06:00"></div>
+                <div class="fg"><label>Close Time</label><input type="time" id="ns-close" value="22:00"></div>
+                <div class="fg"><label>&nbsp;</label><button class="btn btn-blue" onclick="createSite()" style="width:100%;padding:9px 14px;">+ Create</button></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">All Private Sites</div>
+                <span class="mono" id="sites-count"></span>
+            </div>
+            <table>
+                <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Venue/Room</th><th>Admin</th><th>Hours</th><th>Classes</th><th>Students</th><th>Actions</th></tr></thead>
+                <tbody id="sites-tbody"><tr class="empty-row"><td colspan="9">Loading...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── PUBLIC VENUES TAB ── -->
+    <div class="tab-panel" id="tab-pvenues">
+        <div class="panel">
+            <div class="panel-hdr"><div class="ph-title">Create Public Venue</div></div>
+            <div class="form-grid">
+                <div class="fg"><label>Venue Name *</label><input type="text" id="pv-name" placeholder="e.g. Main Auditorium, Hall B"></div>
+                <div class="fg"><label>Type</label>
+                    <select id="pv-type"><option>Hall</option><option>Auditorium</option><option>Conference Room</option><option>Seminar Hall</option><option>Lab</option><option>Ground</option><option>Other</option></select>
+                </div>
+                <div class="fg"><label>Location / Room No.</label><input type="text" id="pv-num" placeholder="e.g. Block C, Ground Floor"></div>
+                <div class="fg"><label>Capacity</label><input type="number" id="pv-cap" placeholder="200"></div>
+                <div class="fg" style="grid-column:span 2;"></div>
+                <div class="fg"><label>&nbsp;</label><button class="btn btn-gold" onclick="createPublicVenue()" style="width:100%;padding:9px 14px;">+ Create</button></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-hdr"><div class="ph-title">All Public Venues</div><span class="mono" id="pv-count"></span></div>
+            <table>
+                <thead><tr><th>#</th><th>Venue Name</th><th>Type</th><th>Location</th><th>Capacity</th><th>Status</th><th>Current Booker</th><th>Actions</th></tr></thead>
+                <tbody id="pvenues-tbody"><tr class="empty-row"><td colspan="8">Loading...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── VENUE REQUESTS TAB ── -->
+    <div class="tab-panel" id="tab-requests">
+        <div class="req-filter-btns">
+            <button class="rfb active" onclick="loadRequests('pending',this)">Pending</button>
+            <button class="rfb"        onclick="loadRequests('approved',this)">Approved</button>
+            <button class="rfb"        onclick="loadRequests('denied',this)">Denied</button>
+            <button class="rfb"        onclick="loadRequests('all',this)">All</button>
+        </div>
+        <div id="requests-list"><div style="color:var(--muted);text-align:center;padding:40px;">Loading requests...</div></div>
+    </div>
+
+    <!-- ── ADMIN OVERVIEW TAB ── -->
+    <div class="tab-panel" id="tab-admins">
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">Admin Overview — Login &amp; Student Count</div>
+                <button class="btn btn-outline btn-sm" onclick="loadAdminOverview()">↻ Refresh</button>
+            </div>
+            <table>
+                <thead><tr><th>Site / Class</th><th>Type</th><th>Admin</th><th>Venue</th><th>Cabin</th><th>Registered Students</th><th>Logged In Today</th></tr></thead>
+                <tbody id="admin-overview-tbody"><tr class="empty-row"><td colspan="7">Loading...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── ATTENDANCE TAB ── -->
+    <div class="tab-panel" id="tab-attend">
+        <div class="panel">
+            <div class="panel-hdr">
+                <div class="ph-title">Attendance Overview</div>
+                <input type="date" id="att-date" style="padding:6px 10px;background:var(--s1);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;" onchange="loadAttendance()">
+            </div>
+            <table>
+                <thead><tr><th>Site / Class</th><th>Total Students</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead>
+                <tbody id="att-tbody"><tr class="empty-row"><td colspan="5">Loading...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</div>
+</div>
+
+<!-- EDIT SITE MODAL -->
+<div class="modal-bd" id="modal-edit-site">
+    <div class="modal">
+        <div class="modal-title">Edit Site</div>
+        <div class="modal-sub">Update this site's details.</div>
+        <input type="hidden" id="es-id">
+        <div class="mf-row2">
+            <div class="mf"><label>Name *</label><input type="text" id="es-name"></div>
+            <div class="mf"><label>Type</label><select id="es-type"><option>Classroom</option><option>Laboratory</option><option>Seminar Hall</option><option>Auditorium</option><option>Exam Hall</option><option>Other</option></select></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Venue / Room No.</label><input type="text" id="es-venue" placeholder="Room 204, Block B"></div>
+            <div class="mf"><label>Admin Cabin No.</label><input type="text" id="es-cabin" placeholder="Cabin 12, Floor 2"></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Admin Username</label><input type="text" id="es-user"></div>
+            <div class="mf"><label>Admin Password</label><input type="password" id="es-pass" placeholder="Leave blank to keep"></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Open Time</label><input type="time" id="es-open" value="06:00"></div>
+            <div class="mf"><label>Close Time</label><input type="time" id="es-close" value="22:00"></div>
+        </div>
+        <div class="mf-row2">
+            <div class="mf"><label>Total Classes</label><input type="number" id="es-total" min="1" placeholder="30"></div>
+            <div class="mf"><label>Capacity</label><input type="number" id="es-cap"></div>
+        </div>
+        <div class="m-err" id="es-err"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 16px;" onclick="closeModal('modal-edit-site')">Cancel</button>
+            <button class="btn btn-blue"    style="flex:1;" onclick="submitEditSite()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT PUBLIC VENUE MODAL -->
+<div class="modal-bd" id="modal-edit-pv">
+    <div class="modal">
+        <div class="modal-title">Edit Public Venue</div>
+        <div class="modal-sub">Update venue details.</div>
+        <input type="hidden" id="epv-id">
+        <div class="mf"><label>Name *</label><input type="text" id="epv-name"></div>
+        <div class="mf-row2">
+            <div class="mf"><label>Type</label><select id="epv-type"><option>Hall</option><option>Auditorium</option><option>Conference Room</option><option>Seminar Hall</option><option>Lab</option><option>Ground</option><option>Other</option></select></div>
+            <div class="mf"><label>Capacity</label><input type="number" id="epv-cap"></div>
+        </div>
+        <div class="mf"><label>Location / Room No.</label><input type="text" id="epv-num"></div>
+        <div class="m-err" id="epv-err"></div>
+        <div class="m-actions">
+            <button class="btn btn-outline" style="padding:10px 16px;" onclick="closeModal('modal-edit-pv')">Cancel</button>
+            <button class="btn btn-gold"    style="flex:1;" onclick="submitEditPV()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Clock
+(function tick(){document.getElementById('sa-clock').textContent=new Date().toLocaleTimeString('en-GB');setTimeout(tick,1000);})();
+
+window.onload=()=>{
+    const _d=new Date(); document.getElementById('att-date').value=_d.getFullYear()+'-'+String(_d.getMonth()+1).padStart(2,'0')+'-'+String(_d.getDate()).padStart(2,'0');
+    loadStats(); loadSites();
+};
+
+function switchTab(name,btn){
+    ['sites','pvenues','requests','admins','attend'].forEach(t=>{
+        document.getElementById('tab-'+t).classList.remove('active');
+    });
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+    const titles={sites:'Private Sites & Classes',pvenues:'Public Venues',requests:'Venue Booking Requests',admins:'Admin Overview',attend:'Attendance Overview'};
+    document.getElementById('tb-title').textContent=titles[name];
+    if(name==='pvenues') loadPublicVenues();
+    if(name==='requests') loadRequests('pending',document.querySelector('.rfb.active')||document.querySelector('.rfb'));
+    if(name==='admins')  loadAdminOverview();
+    if(name==='attend')  loadAttendance();
+}
+
+// STATS
+async function loadStats(){
+    try{
+        const d=await fetch('/api/superadmin/stats').then(r=>r.json());
+        document.getElementById('ss-sites').textContent=d.total_sites;
+        document.getElementById('ss-pv').textContent=d.total_public_venues;
+        document.getElementById('ss-stu').textContent=d.total_students;
+        document.getElementById('ss-pend').textContent=d.pending_requests;
+        document.getElementById('ss-logged').textContent=d.admins_logged_today;
+        const badge=document.getElementById('sb-req-badge');
+        if(d.pending_requests>0){badge.textContent=d.pending_requests;badge.style.display='';}
+        else badge.style.display='none';
+    }catch{}
+}
+
+// SITES
+async function loadSites(){
+    try{
+        const sites=await fetch('/api/superadmin/sites').then(r=>r.json());
+        document.getElementById('sites-count').textContent=`${sites.length} site${sites.length!==1?'s':''}`;
+        const tbody=document.getElementById('sites-tbody');
+        if(!sites.length){tbody.innerHTML='<tr class="empty-row"><td colspan="9">No private sites yet.</td></tr>';return;}
+        tbody.innerHTML=sites.map(s=>`
+            <tr>
+                <td class="mono">#${String(s.id).padStart(3,'0')}</td>
+                <td style="font-weight:600;">${s.org_name}</td>
+                <td><span class="badge b-blue">${s.room_type||'Classroom'}</span></td>
+                <td class="mono">${s.venue_number||'—'}</td>
+                <td>${s.admin_user||'—'}</td>
+                <td class="mono" style="color:var(--gold);">${s.open_time||'06:00'} – ${s.close_time||'22:00'}</td>
+                <td class="mono">${s.total_classes||30}</td>
+                <td class="mono">${s.student_count}</td>
+                <td><div style="display:flex;gap:5px;">
+                    <button class="btn btn-outline btn-sm" onclick="openEditSite(${s.id},'${esc(s.org_name)}','${esc(s.room_type||'')}','${esc(s.venue_number||'')}','${esc(s.cabin_number||'')}','${esc(s.admin_user||'')}',${s.capacity||0},'${esc(s.open_time||'06:00')}','${esc(s.close_time||'22:00')}',${s.total_classes||30})">Edit</button>
+                    <button class="btn btn-danger btn-sm"  onclick="deleteSite(${s.id},'${esc(s.org_name)}')">Del</button>
+                </div></td>
+            </tr>`).join('');
+    }catch{document.getElementById('sites-tbody').innerHTML='<tr class="empty-row"><td colspan="9">Server error.</td></tr>';}
+}
+
+async function createSite(){
+    const name=document.getElementById('ns-name').value.trim();
+    const pass=document.getElementById('ns-pass').value.trim();
+    if(!name||!pass){alert('Site name and admin password are required.');return;}
+    const btn=event.target;btn.textContent='Creating...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/superadmin/add_site',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({org_name:name,room_type:document.getElementById('ns-type').value,
+                venue_number:document.getElementById('ns-venue').value,cabin_number:'',
+                admin_user:document.getElementById('ns-user').value,admin_pass:pass,
+                total_classes:document.getElementById('ns-total').value||30,
+                open_time:document.getElementById('ns-open').value,close_time:document.getElementById('ns-close').value})});
+        const data=await res.json();
+        if(data.status==='success'){['ns-name','ns-venue','ns-user','ns-pass'].forEach(id=>document.getElementById(id).value='');document.getElementById('ns-open').value='06:00';document.getElementById('ns-close').value='22:00';document.getElementById('ns-total').value='30';loadSites();loadStats();}
+        else alert(data.message||'Error creating site.');
+    }catch{alert('Server error.');}
+    btn.textContent='+ Create';btn.disabled=false;
+}
+
+async function deleteSite(id,name){
+    if(!confirm(`Delete "${name}" and ALL its student records? This cannot be undone.`))return;
+    await fetch(`/api/superadmin/delete_site/${id}`,{method:'DELETE'});
+    loadSites();loadStats();
+}
+
+function openEditSite(id,name,type,venue,cabin,user,cap,openT,closeT,totalC){
+    document.getElementById('es-id').value=id;
+    document.getElementById('es-name').value=name;
+    document.getElementById('es-type').value=type;
+    document.getElementById('es-venue').value=venue;
+    document.getElementById('es-cabin').value=cabin;
+    document.getElementById('es-user').value=user;
+    document.getElementById('es-pass').value='';
+    document.getElementById('es-cap').value=cap;
+    document.getElementById('es-open').value=openT||'06:00';
+    document.getElementById('es-close').value=closeT||'22:00';
+    document.getElementById('es-total').value=totalC||30;
+    document.getElementById('es-err').style.display='none';
+    document.getElementById('modal-edit-site').classList.add('open');
+}
+async function submitEditSite(){
+    const name=document.getElementById('es-name').value.trim();
+    if(!name){showErr('es-err','Name required.');return;}
+    const btn=document.querySelector('#modal-edit-site .btn-blue');btn.textContent='Saving...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/superadmin/edit_site',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({site_id:document.getElementById('es-id').value,org_name:name,
+                room_type:document.getElementById('es-type').value,venue_number:document.getElementById('es-venue').value,
+                cabin_number:document.getElementById('es-cabin').value,admin_user:document.getElementById('es-user').value,
+                admin_pass:document.getElementById('es-pass').value,capacity:document.getElementById('es-cap').value||0,
+                open_time:document.getElementById('es-open').value,close_time:document.getElementById('es-close').value,
+                total_classes:document.getElementById('es-total').value||30})});
+        const data=await res.json();
+        if(data.status==='success'){closeModal('modal-edit-site');loadSites();}
+        else showErr('es-err',data.message||'Error.');
+    }catch{showErr('es-err','Server error.');}
+    btn.textContent='Save Changes';btn.disabled=false;
+}
+
+// PUBLIC VENUES
+async function loadPublicVenues(){
+    try{
+        const venues=await fetch('/api/superadmin/public_venues').then(r=>r.json());
+        document.getElementById('pv-count').textContent=`${venues.length} venue${venues.length!==1?'s':''}`;
+        const tbody=document.getElementById('pvenues-tbody');
+        if(!venues.length){tbody.innerHTML='<tr class="empty-row"><td colspan="8">No public venues yet.</td></tr>';return;}
+        tbody.innerHTML=venues.map(v=>{
+            const isOcc=v.status==='occupied';
+            return `<tr>
+                <td class="mono">#${v.id}</td>
+                <td style="font-weight:600;">${v.venue_name}</td>
+                <td><span class="badge b-gold">${v.venue_type||'Hall'}</span></td>
+                <td class="mono">${v.venue_number||'—'}</td>
+                <td class="mono">${v.capacity||'—'}</td>
+                <td><span class="badge ${isOcc?'b-amber':'b-green'}">${isOcc?'Occupied':'Available'}</span></td>
+                <td style="font-size:12px;">${isOcc&&v.current_booker?v.current_booker:'—'}</td>
+                <td><div style="display:flex;gap:5px;">
+                    <button class="btn btn-outline btn-sm" onclick="openEditPV(${v.id},'${esc(v.venue_name)}','${esc(v.venue_type||'')}','${esc(v.venue_number||'')}',${v.capacity||0})">Edit</button>
+                    <button class="btn btn-danger btn-sm"  onclick="deletePV(${v.id},'${esc(v.venue_name)}')">Del</button>
+                </div></td>
+            </tr>`;}).join('');
+    }catch{document.getElementById('pvenues-tbody').innerHTML='<tr class="empty-row"><td colspan="8">Server error.</td></tr>';}
+}
+
+async function createPublicVenue(){
+    const name=document.getElementById('pv-name').value.trim();
+    if(!name){alert('Venue name is required.');return;}
+    const btn=event.target;btn.textContent='Creating...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/superadmin/add_public_venue',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({venue_name:name,venue_type:document.getElementById('pv-type').value,
+                venue_number:document.getElementById('pv-num').value,capacity:document.getElementById('pv-cap').value||0})});
+        const data=await res.json();
+        if(data.status==='success'){['pv-name','pv-num','pv-cap'].forEach(id=>document.getElementById(id).value='');loadPublicVenues();loadStats();}
+        else alert(data.message);
+    }catch{alert('Server error.');}
+    btn.textContent='+ Create';btn.disabled=false;
+}
+
+async function deletePV(id,name){
+    if(!confirm(`Delete public venue "${name}"?`))return;
+    await fetch(`/api/superadmin/delete_public_venue/${id}`,{method:'DELETE'});
+    loadPublicVenues();loadStats();
+}
+
+function openEditPV(id,name,type,num,cap){
+    document.getElementById('epv-id').value=id;document.getElementById('epv-name').value=name;
+    document.getElementById('epv-type').value=type;document.getElementById('epv-num').value=num;
+    document.getElementById('epv-cap').value=cap;
+    document.getElementById('epv-err').style.display='none';
+    document.getElementById('modal-edit-pv').classList.add('open');
+}
+async function submitEditPV(){
+    const name=document.getElementById('epv-name').value.trim();
+    if(!name){showErr('epv-err','Name required.');return;}
+    const btn=document.querySelector('#modal-edit-pv .btn-gold');btn.textContent='Saving...';btn.disabled=true;
+    try{
+        const res=await fetch('/api/superadmin/edit_public_venue',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({venue_id:document.getElementById('epv-id').value,venue_name:name,
+                venue_type:document.getElementById('epv-type').value,venue_number:document.getElementById('epv-num').value,
+                capacity:document.getElementById('epv-cap').value||0})});
+        const data=await res.json();
+        if(data.status==='success'){closeModal('modal-edit-pv');loadPublicVenues();}
+        else showErr('epv-err',data.message);
+    }catch{showErr('epv-err','Server error.');}
+    btn.textContent='Save Changes';btn.disabled=false;
+}
+
+// VENUE REQUESTS
+async function loadRequests(status,btn){
+    if(btn){document.querySelectorAll('.rfb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+    try{
+        const rows=await fetch(`/api/superadmin/venue_requests?status=${status}`).then(r=>r.json());
+        const el=document.getElementById('requests-list');
+        if(!rows.length){el.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;font-size:13px;">No requests in this category.</div>';return;}
+        el.innerHTML=rows.map(r=>{
+            const isPending=r.status==='pending';
+            return `<div class="req-card">
+                <div class="rc-info">
+                    <div class="rc-title">${r.admin_name} → <span style="color:var(--blue)">${r.venue_name}</span></div>
+                    <div class="rc-detail">
+                        📍 ${r.venue_number||'No location'} &nbsp;·&nbsp;
+                        📅 ${r.booking_date} &nbsp;·&nbsp;
+                        🕐 ${r.start_time?.substring(0,5)||''}–${r.end_time?.substring(0,5)||''} &nbsp;·&nbsp;
+                        Site: ${r.org_name} &nbsp;·&nbsp;
+                        ${r.purpose?'Purpose: '+r.purpose:'No purpose given'}
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="badge b-${r.status==='pending'?'amber':r.status==='approved'?'green':'red'}">${r.status}</span>
+                    ${isPending?`<div class="rc-actions">
+                        <button class="btn btn-success btn-sm" onclick="approveReq(${r.id},this)">✓ Approve</button>
+                        <button class="btn btn-danger btn-sm"  onclick="denyReq(${r.id},this)">✕ Deny</button>
+                    </div>`:''}
+                </div>
+            </div>`;}).join('');
+    }catch{document.getElementById('requests-list').innerHTML='<div style="color:var(--muted);text-align:center;padding:40px;">Server error.</div>';}
+}
+
+async function approveReq(id,btn){
+    btn.textContent='Approving...';btn.disabled=true;
+    try{
+        const res=await fetch(`/api/superadmin/approve_request/${id}`,{method:'POST'});
+        const data=await res.json();
+        if(data.status==='success'){loadRequests('pending',null);loadStats();loadPublicVenues();}
+        else alert(data.message);
+    }catch{alert('Server error.');}
+}
+async function denyReq(id,btn){
+    btn.textContent='Denying...';btn.disabled=true;
+    try{
+        await fetch(`/api/superadmin/deny_request/${id}`,{method:'POST'});
+        loadRequests('pending',null);loadStats();
+    }catch{alert('Server error.');}
+}
+
+// ADMIN OVERVIEW
+async function loadAdminOverview(){
+    try{
+        const rows=await fetch('/api/superadmin/admin_overview').then(r=>r.json());
+        const tbody=document.getElementById('admin-overview-tbody');
+        if(!rows.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No admins registered.</td></tr>';return;}
+        tbody.innerHTML=rows.map(r=>`
+            <tr>
+                <td style="font-weight:600;">${r.org_name}</td>
+                <td><span class="badge b-blue">${r.room_type||'—'}</span></td>
+                <td>${r.admin_user||'—'}</td>
+                <td class="mono">${r.venue_number||'—'}</td>
+                <td class="mono">${r.cabin_number||'—'}</td>
+                <td class="mono">${r.total_students}</td>
+                <td>
+                    <span class="logged-dot ${r.logged_today?'lg-yes':'lg-no'}"></span>
+                    ${r.logged_today?'<span style="color:var(--green-t);font-size:12px;font-weight:600;">Logged In</span>':'<span style="color:var(--muted);font-size:12px;">Not yet today</span>'}
+                </td>
+            </tr>`).join('');
+    }catch{document.getElementById('admin-overview-tbody').innerHTML='<tr class="empty-row"><td colspan="7">Server error.</td></tr>';}
+}
+
+// ATTENDANCE
+async function loadAttendance(){
+    const date=document.getElementById('att-date').value;
+    try{
+        const rows=await fetch(`/api/superadmin/all_attendance?date=${date}`).then(r=>r.json());
+        const tbody=document.getElementById('att-tbody');
+        if(!rows.length){tbody.innerHTML='<tr class="empty-row"><td colspan="5">No sites registered.</td></tr>';return;}
+        tbody.innerHTML=rows.map(r=>{
+            const absent=r.total_students-r.present_count;
+            const pct=r.total_students>0?Math.round((r.present_count/r.total_students)*100):0;
+            const fc=pct>=75?'#5DBE8A':pct>=50?'#D4A843':'#E07070';
+            return `<tr>
+                <td style="font-weight:600;">${r.site_name}</td>
+                <td class="mono">${r.total_students}</td>
+                <td class="mono" style="color:var(--green-t);">${r.present_count}</td>
+                <td class="mono" style="color:var(--red-t);">${absent}</td>
+                <td>
+                    <div class="mono">${pct}%</div>
+                    <div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${fc};"></div></div>
+                </td>
+            </tr>`;}).join('');
+    }catch{}
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bd').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+function esc(s){return String(s||'').replace(/'/g,"\\'");}
+</script>
+</body>
+</html>

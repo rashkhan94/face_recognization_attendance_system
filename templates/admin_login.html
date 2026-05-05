@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAS — Admin Login | {{ site.org_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080A0E;
+            --surface: #0E1117;
+            --card: #131720;
+            --gold: #D4A843;
+            --gold2: #E8C36A;
+            --gold-glow: rgba(212,168,67,.25);
+            --gold-dim: rgba(212,168,67,.08);
+            --text: #E8E2D5;
+            --muted: #6B6760;
+            --border: rgba(255,255,255,.06);
+            --border-s: rgba(255,255,255,.12);
+            --red: #E05555;
+        }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* Animated gradient mesh */
+        .mesh {
+            position: fixed; inset: 0;
+            pointer-events: none;
+        }
+        .mesh-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            animation: mesh-drift 22s ease-in-out infinite;
+        }
+        .mesh-1 {
+            width: 500px; height: 500px;
+            background: rgba(212,168,67,.05);
+            top: -150px; right: -100px;
+            animation-duration: 20s;
+        }
+        .mesh-2 {
+            width: 400px; height: 400px;
+            background: rgba(212,168,67,.04);
+            bottom: -150px; left: -80px;
+            animation-delay: -7s;
+            animation-duration: 28s;
+        }
+        .mesh-3 {
+            width: 250px; height: 250px;
+            background: rgba(232,195,106,.03);
+            top: 40%; left: 60%;
+            animation-delay: -12s;
+        }
+        @keyframes mesh-drift {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(40px, -30px); }
+            66% { transform: translate(-30px, 40px); }
+        }
+
+        /* Dot pattern */
+        .dot-grid {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(rgba(212,168,67,.06) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 65%);
+            pointer-events: none;
+        }
+
+        /* Sparkle particles */
+        .sparkles {
+            position: fixed; inset: 0;
+            pointer-events: none; overflow: hidden;
+        }
+        .sparkle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: rgba(212,168,67,.5);
+            border-radius: 50%;
+            animation: twinkle ease-in-out infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        .login-container {
+            width: 100%; max-width: 440px;
+            position: relative; z-index: 10;
+            animation: slide-up 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Header */
+        .login-header { text-align: center; margin-bottom: 30px; }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 13px; color: var(--muted);
+            text-decoration: none; margin-bottom: 26px;
+            padding: 7px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.3s;
+            background: rgba(255,255,255,.01);
+        }
+        .back-link:hover {
+            color: var(--text);
+            border-color: var(--border-s);
+            transform: translateX(-3px);
+        }
+
+        .role-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px;
+            background: var(--gold-dim);
+            border: 1px solid rgba(212,168,67,.18);
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; font-weight: 500;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+        .role-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold);
+            animation: dot-pulse 2s ease-in-out infinite;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,.08); }
+            50% { box-shadow: 0 0 0 8px rgba(212,168,67,.03); }
+        }
+        @keyframes dot-pulse {
+            0%, 100% { opacity: 1; } 50% { opacity: 0.2; }
+        }
+
+        /* Logo */
+        .logo-box {
+            width: 76px; height: 76px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .logo-box::before {
+            content: '';
+            position: absolute; inset: -4px;
+            border-radius: 22px;
+            background: conic-gradient(from 0deg, var(--gold), var(--gold2), transparent, var(--gold));
+            animation: conic-spin 4s linear infinite;
+            opacity: 0.2;
+        }
+        @keyframes conic-spin { to { transform: rotate(360deg); } }
+        .logo-inner {
+            position: relative; z-index: 2;
+            width: 76px; height: 76px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, var(--gold), #B8922A);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 30px var(--gold-glow);
+            transition: all 0.3s;
+        }
+        .logo-inner:hover {
+            transform: scale(1.06) rotate(-2deg);
+            box-shadow: 0 14px 40px var(--gold-glow);
+        }
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px; font-weight: 900;
+            color: #0C0E13;
+        }
+
+        .login-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px; font-weight: 900;
+            margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--text), rgba(232,226,213,.6));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .login-header p {
+            font-size: 14px; color: var(--muted);
+        }
+
+        /* Card */
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 34px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+        .login-card:hover {
+            border-color: rgba(212,168,67,.1);
+            box-shadow: 0 24px 60px rgba(0,0,0,.3);
+        }
+        .login-card::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212,168,67,.02), transparent);
+            animation: shimmer 5s ease-in-out infinite;
+        }
+        @keyframes shimmer { 0%,100%{left:-100%} 50%{left:100%} }
+
+        /* Site info */
+        .site-pill {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 24px;
+            transition: border-color 0.3s;
+        }
+        .site-pill:hover { border-color: var(--border-s); }
+        .sp-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: var(--gold-dim);
+            border: 1px solid rgba(212,168,67,.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .sp-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+        .sp-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: var(--muted);
+        }
+
+        /* Field */
+        .field { margin-bottom: 20px; position: relative; }
+        .field label {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 0.9px; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 9px;
+            transition: color 0.3s;
+        }
+        .field:focus-within label { color: var(--gold); }
+        .field .lbl-icon { font-size: 12px; }
+
+        .field-input {
+            width: 100%; padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px; font-family: 'Outfit', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .field-input:focus {
+            border-color: rgba(212,168,67,.45);
+            box-shadow: 0 0 0 4px rgba(212,168,67,.07);
+        }
+        .field-input::placeholder { color: var(--muted); }
+
+        .pw-wrap { position: relative; }
+        .pw-toggle {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: var(--muted);
+            cursor: pointer; font-size: 16px; padding: 4px;
+            transition: color 0.2s;
+        }
+        .pw-toggle:hover { color: var(--text); }
+
+        /* Error */
+        .login-error {
+            display: none; margin-bottom: 18px;
+            padding: 12px 16px;
+            background: rgba(224,85,85,.08);
+            border: 1px solid rgba(224,85,85,.2);
+            border-radius: 12px;
+            font-size: 13px; color: var(--red);
+            animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+            0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+        }
+
+        /* Button */
+        .btn-auth {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--gold), #B8922A);
+            color: #0C0E13; border: none; border-radius: 12px;
+            font-size: 15px; font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative; overflow: hidden;
+            letter-spacing: 0.4px;
+        }
+        .btn-auth::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,.15) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+        .btn-auth:hover::before { transform: translateX(100%); }
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px var(--gold-glow);
+        }
+        .btn-auth:active { transform: translateY(0); }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none !important; }
+        .btn-auth .btn-text { position: relative; z-index: 1; }
+        .btn-auth .spinner {
+            display: none;
+            width: 20px; height: 20px;
+            border: 2px solid rgba(12,14,19,.3);
+            border-top-color: #0C0E13;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin: 0 auto;
+        }
+        .btn-auth.loading .btn-text { display: none; }
+        .btn-auth.loading .spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Footer */
+        .login-footer {
+            text-align: center; margin-top: 22px;
+            display: flex; flex-direction: column; gap: 8px;
+            align-items: center;
+        }
+        .footer-link {
+            font-size: 13px; color: var(--muted);
+            text-decoration: none; transition: all 0.2s;
+            padding: 6px 14px; border-radius: 8px;
+        }
+        .footer-link:hover { color: var(--gold); background: rgba(212,168,67,.05); }
+
+        /* Success */
+        .success-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(8,10,14,.92);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+        }
+        .success-overlay.show { display: flex; }
+        .success-ring {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), #B8922A);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; color: #0C0E13;
+            animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px var(--gold-glow);
+        }
+        @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+        .success-msg {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            animation: slide-up 0.5s ease 0.2s both;
+        }
+
+        @media (max-width: 500px) {
+            .login-header h1 { font-size: 26px; }
+            .login-card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+<div class="mesh">
+    <div class="mesh-orb mesh-1"></div>
+    <div class="mesh-orb mesh-2"></div>
+    <div class="mesh-orb mesh-3"></div>
+</div>
+<div class="dot-grid"></div>
+<div class="sparkles" id="sparkles"></div>
+
+<div class="login-container">
+    <div class="login-header">
+        <a href="/" class="back-link">← All Sites</a>
+        <div class="role-badge">Class Administrator</div>
+        <div class="logo-box">
+            <div class="logo-inner">
+                <span class="logo-text">FR</span>
+            </div>
+        </div>
+        <h1>Admin Access</h1>
+        <p>Enter credentials to manage your class</p>
+    </div>
+
+    <div class="login-card">
+        <div class="site-pill">
+            <div class="sp-icon">🏛</div>
+            <div>
+                <div class="sp-name">{{ site.org_name }}</div>
+                <div class="sp-meta">{{ site.room_type or 'Classroom' }} · ID #{{ '%03d'|format(site.id) }}</div>
+            </div>
+        </div>
+
+        <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+
+        <div class="field">
+            <label><span class="lbl-icon">🔑</span> Admin Password</label>
+            <div class="pw-wrap">
+                <input type="password" class="field-input" id="password" placeholder="Enter your password"
+                       autocomplete="off" onkeydown="if(event.key==='Enter') doLogin()">
+                <button type="button" class="pw-toggle" onclick="togglePw()" id="pw-eye">👁</button>
+            </div>
+        </div>
+
+        <button class="btn-auth" id="btn-login" onclick="doLogin()">
+            <span class="btn-text">Login to Dashboard →</span>
+            <div class="spinner"></div>
+        </button>
+
+        <div class="login-footer">
+            <a href="/portal/{{ site.id }}" class="footer-link">📷 Go to attendance scan instead</a>
+        </div>
+    </div>
+</div>
+
+<div class="success-overlay" id="success-overlay">
+    <div class="success-ring">✓</div>
+    <div class="success-msg">Welcome Back</div>
+</div>
+
+<script>
+    const ORG_ID = {{ site.id }};
+
+    // Sparkle particles
+    (function createSparkles() {
+        const c = document.getElementById('sparkles');
+        for (let i = 0; i < 30; i++) {
+            const s = document.createElement('div');
+            s.className = 'sparkle';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDuration = (2 + Math.random() * 4) + 's';
+            s.style.animationDelay = Math.random() * 5 + 's';
+            s.style.width = s.style.height = (1.5 + Math.random() * 2.5) + 'px';
+            c.appendChild(s);
+        }
+    })();
+
+    function togglePw() {
+        const inp = document.getElementById('password');
+        const eye = document.getElementById('pw-eye');
+        if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🔒'; }
+        else { inp.type = 'password'; eye.textContent = '👁'; }
+    }
+
+    async function doLogin() {
+        const pass = document.getElementById('password').value;
+        if (!pass) return;
+
+        const btn = document.getElementById('btn-login');
+        const errEl = document.getElementById('login-error');
+        errEl.style.display = 'none';
+        btn.classList.add('loading'); btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({org_id: ORG_ID, password: pass})
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('success-overlay').classList.add('show');
+                setTimeout(() => { window.location.href = '/admin/dashboard'; }, 1200);
+            } else {
+                errEl.style.display = 'block';
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                btn.classList.remove('loading'); btn.disabled = false;
+            }
+        } catch {
+            errEl.textContent = 'Server error. Make sure Flask is running.';
+            errEl.style.display = 'block';
+            btn.classList.remove('loading'); btn.disabled = false;
+        }
+    }
+
+    document.getElementById('password').focus();
+</script>
+</body>
+</html>

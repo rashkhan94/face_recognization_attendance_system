@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+venv/
+.env
+*.log
+.DS_Store
+add_total_classes.py
+migrate_timing.py
+setup_mysql.ps1
