@@ -7,6 +7,4 @@ venv/
 .env
 *.log
 .DS_Store
-add_total_classes.py
-migrate_timing.py
-setup_mysql.ps1
+FRAS_Project_Report.html
